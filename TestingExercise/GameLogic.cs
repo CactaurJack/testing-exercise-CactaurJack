@@ -59,16 +59,18 @@ namespace TestingExercise
         /// <summary>
         /// Constructs a new game of Hangman, using the provided <paramref name="secret"/>
         /// </summary>
-        /// <param name="secret">The secret to guess</param>
+        /// <param name="secret">The secret to guess should be five or more characters</param>
+        /// <exception cref="cref=System.ArgumentException">If the the <paramref name="= "secret"/></paramref>"</exception>
         public GameLogic(string secret)
         {
+            if (secret.Length <= 5) throw new ArgumentException("The secret phrase must be at least five characters");
             secretPhrase = new char[secret.Length];
             revealedPhrase = new char[secret.Length];
             for(int i = 0; i < secret.Length; i++)
             {
                 secretPhrase[i] = secret[i];
-                if (secretPhrase[i].Equals(' ')) revealedPhrase[i] = secret[i];
-                else revealedPhrase[i] = '_';                
+                if (Char.IsLetter(secretPhrase[i])) revealedPhrase[i] = '_';
+                else revealedPhrase[i] = secret[i];                
             }            
         }
 
@@ -77,20 +79,33 @@ namespace TestingExercise
         /// </summary>
         /// <param name="c">The character guessed</param>
         /// <returns>true if the guess was correct, false if not</returns>
-        public bool Guess(char c)
+        public GuessResult Guess(char c)
         {
+            if (!Char.IsLetter(c)) return GuessResult.NotLetter;
+            if (guesses.Contains(c)) return GuessResult.Multiple;
+            
             guesses.Add(c);
             bool found = false;
             for(int i = 0; i < secretPhrase.Length; i++)
             {
-                if(secretPhrase[i] == c)
+                if(Char.ToUpper(secretPhrase[i]) == Char.ToUpper(c))
                 {
                     revealedPhrase[i] = c;
                     found = true;
                 }
             }
-            if (!found) WrongGuesses += 1;
-            return found;
+            if (!found) 
+            {
+                WrongGuesses += 1;
+                return GuessResult.Wrong;
+            }
+            else
+            {
+                return GuessResult.Correct;
+            }
+            
         }
+
+        
     }
 }
